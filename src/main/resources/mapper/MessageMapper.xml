@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ty.wetalk.mapper.MessageMapper">
+
+    <update id="addMessage" >
+        INSERT INTO messages
+            (
+                messages.conversationId,
+                messages.senderId,
+                messages.receiverId,
+                messages.content,
+                messages.sendTime
+            )
+            VALUES
+            (
+                #{conversationId},
+                #{senderId},
+                #{receiverId},
+                #{content},
+                #{sendTime}
+            );
+    </update>
+
+</mapper>

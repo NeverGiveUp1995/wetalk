@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ty.wetalk.mapper.UserMapper">
+
+    <select id="getUserByAccount" resultType="com.ty.wetalk.model.User">
+        select * from user where account = #{userAccount}
+    </select>
+
+    <select id="login" resultType="com.ty.wetalk.model.User">
+                select * from user where account = #{userAccount} and password = #{password}
+    </select>
+
+    <select id="getMessages" resultType="com.ty.wetalk.model.MessageResult">
+--                  SELECT e.*  FROM(SELECT c.* FROM
+--                    (
+--                       SELECT a.conversation_id, MAX( a.message_id) as message_id
+--                       FROM message a
+--                       GROUP BY a.conversation_id
+--                    ) as b
+--                 LEFT JOIN message c ON c.message_id = b.message_id) e
+--                 ORDER BY e.send_time DESC
+                SELECT result.* FROM
+                (
+                    SELECT * FROM
+                        (
+                            SELECT * FROM `user`
+                            INNER  JOIN
+                                (
+                                    SELECT e.*  FROM
+                                        (
+                                            SELECT c.* FROM
+                                                (
+                                                    SELECT a.conversationId, MAX( a.messageId) as messageId
+                                                    FROM messages a
+                                                    GROUP BY a.conversationId
+                                                ) as b
+                                            LEFT JOIN messages c ON c.messageId = b.messageId) e
+                                            ORDER BY e.sendTime DESC
+                                    )as result
+                            ON result.senderId = `user`.account
+                        ) as a
+                        INNER  JOIN
+                        (
+                            SELECT
+                                `account` as account1,
+                                `password` as password1,
+                                `nickName` as nickName1,
+                                headerImg as headerImg1,
+                                phoneNum as phoneNum1,
+                                email as email1,
+                                sex as sex1,
+                                birthday as birthday1,
+                                address as address1,
+                                isVip as isVip1
+                             FROM `user`
+                        ) as user1
+                        ON a.receiverId = user1.account1
+                ) as result
+                WHERE result.senderId =#{userAccount} or receiverId = #{userAccount}
+    </select>
+
+    <select id="getConversationId" resultType="java.lang.Integer">
+            SELECT conversationId FROM
+                conversations
+                WHERE
+                    (conversation1 = #{senderId} and conversation2 = #{receiverId})
+                    or
+                    (conversation2 = #{senderId} and conversation1 = #{receiverId})
+    </select>
+
+</mapper>
