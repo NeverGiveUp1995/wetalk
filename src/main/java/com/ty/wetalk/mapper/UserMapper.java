@@ -11,9 +11,18 @@ import java.util.List;
 public interface UserMapper {
     User getUserByAccount(String userAccount);
 
+    User getUserByPhoneNum(String phoneNum);
+
     User login(String userAccount, String password);
 
     List<MessageResult> getMessages(String userAccount);
 
     int getConversationId(String senderId, String receiverId);
+
+    /**
+     * 用户注册
+     *
+     * @param user
+     */
+    int register(User user);
 }

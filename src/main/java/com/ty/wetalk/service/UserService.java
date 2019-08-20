@@ -17,13 +17,23 @@ public class UserService {
         return userMapper.getUserByAccount(userAccount);
     }
 
+    public User getUserByPhoneNum(String phoneNum) {
+        return userMapper.getUserByPhoneNum(phoneNum);
+    }
+
     public User login(String userAccount, String password) {
         return userMapper.login(userAccount, password);
     }
 
-    public List<MessageResult> getMessages(String userAccount){
+    public List<MessageResult> getMessages(String userAccount) {
         return userMapper.getMessages(userAccount);
     }
 
-    public int  getConversationId(String senderId,String receiverId){return  userMapper.getConversationId(senderId,receiverId);}
+    public int getConversationId(String senderId, String receiverId) {
+        return userMapper.getConversationId(senderId, receiverId);
+    }
+
+    public int register(User user) throws Exception {
+        return userMapper.register(user);
+    }
 }

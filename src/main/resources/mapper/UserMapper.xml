@@ -6,6 +6,10 @@
         select * from user where account = #{userAccount}
     </select>
 
+    <select id="getUserByPhoneNum" resultType="com.ty.wetalk.model.User">
+        select * from user where phoneNum = #{phoneNum}
+    </select>
+
     <select id="login" resultType="com.ty.wetalk.model.User">
                 select * from user where account = #{userAccount} and password = #{password}
     </select>
@@ -48,7 +52,7 @@
                                 headerImg as headerImg1,
                                 phoneNum as phoneNum1,
                                 email as email1,
-                                sex as sex1,
+                                gender as gender1,
                                 birthday as birthday1,
                                 address as address1,
                                 isVip as isVip1
@@ -67,5 +71,28 @@
                     or
                     (conversation2 = #{senderId} and conversation1 = #{receiverId})
     </select>
+
+    <update id="register" parameterType="com.ty.wetalk.model.User">
+        INSERT INTO user
+            (
+                user.account,
+               user.password,
+               user.nickName,
+               user.phoneNum,
+                user.gender,
+                user.email,
+                user.registerDate
+            )
+            VALUES
+            (
+                #{account},
+                #{password},
+                #{nickName},
+                #{phoneNum},
+                #{gender},
+                #{email},
+                #{registerDate}
+            );
+    </update>
 
 </mapper>

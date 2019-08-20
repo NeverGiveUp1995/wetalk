@@ -21,4 +21,5 @@ public class ResponseResult {
         this.data = data;
         this.tip = tip;
     }
+
 }
