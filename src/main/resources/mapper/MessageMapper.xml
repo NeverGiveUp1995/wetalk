@@ -21,4 +21,23 @@
             );
     </update>
 
+
+    <!-- 查询两个好友之间的聊天记录-->
+    <select id="getChatHistory" resultType="com.ty.wetalk.model.MessageResult">
+       SELECT * FROM
+            (
+                 (SELECT `user`.account as account1,`user`.nickName as nickName1,`user`.headerImg as headerImg1 FROM user ) receiver
+                INNER JOIN
+                (
+                    SELECT * FROM
+                    (
+                        (SELECT `user`.account,`user`.nickName,`user`.headerImg FROM user ) a
+                        INNER  JOIN messages ON a.account = messages.senderId
+                    )
+                )b
+                ON receiver.account1 = b.receiverId
+            )
+            WHERE (senderId=#{currentUserAccount} and receiverId=#{friendAccount}) or (senderId=#{friendAccount} and receiverId=#{currentUserAccount})
+            ORDER BY messageId desc
+    </select>
 </mapper>

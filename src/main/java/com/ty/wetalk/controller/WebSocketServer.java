@@ -58,11 +58,15 @@ public class WebSocketServer {
     @OnOpen
     public void onOpen(Session session, @PathParam("userAccount") String userAccount) throws Exception {
 //        将当前的session存放在hashmap中
-        onlineUserSessions.put(userAccount, session);
-        System.out.println(session.getId());
-        System.out.println("当前用户的webSocket对象===>" + webSocketSet);
-        webSocketSet.add(this);
-        LOGGER.info("创建一个{}的websocket的连接,当前登录人数{}", userAccount, webSocketSet.size());
+        Session checkSession = onlineUserSessions.get(userAccount);
+        if (checkSession == null) {
+            onlineUserSessions.put(userAccount, session);
+            webSocketSet.add(this);
+            LOGGER.info("创建一个{}的websocket的连接,当前登录人数{}", userAccount, webSocketSet.size());
+        } else {
+            onlineUserSessions.replace(userAccount, session);
+            LOGGER.info("当前用户{}已连接到服务器,已替换连接", userAccount);
+        }
     }
 
     @OnClose

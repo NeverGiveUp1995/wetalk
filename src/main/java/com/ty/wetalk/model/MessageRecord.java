@@ -13,4 +13,5 @@ public class MessageRecord {
 
     public MessageRecord() {
     }
+
 }

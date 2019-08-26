@@ -38,9 +38,10 @@
                                                     FROM messages a
                                                     GROUP BY a.conversationId
                                                 ) as b
-                                            LEFT JOIN messages c ON c.messageId = b.messageId) e
-                                            ORDER BY e.sendTime DESC
-                                    )as result
+                                            LEFT JOIN messages c ON c.messageId = b.messageId
+                                        ) e
+                                    ORDER BY e.sendTime DESC
+                                )as result
                             ON result.senderId = `user`.account
                         ) as a
                         INNER  JOIN

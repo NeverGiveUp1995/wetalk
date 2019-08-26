@@ -14,4 +14,12 @@ public class Message {
     public Message() {
     }
 
+    public Message(int messageId, int conversationId, User sender, User receiver, String sendTime, String content) {
+        this.messageId = messageId;
+        this.conversationId = conversationId;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.sendTime = sendTime;
+        this.content = content;
+    }
 }
