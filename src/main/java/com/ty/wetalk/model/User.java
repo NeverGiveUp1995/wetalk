@@ -15,6 +15,7 @@ public class User {
     private String address;//地址
     private String isVip;//地址
     private String registerDate;//注册日期
+    private boolean isOnline;//是否在线
 
     public User(String account, String password, String nickName, String headerImg, String phoneNum, String email, String gender, String birthday, String address, String isVip, String registerDate) {
         this.account = account;
@@ -32,6 +33,5 @@ public class User {
 
     public User() {
     }
-
 
 }

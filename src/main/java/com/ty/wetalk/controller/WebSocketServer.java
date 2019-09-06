@@ -72,6 +72,16 @@ public class WebSocketServer {
     @OnClose
     public void onClose() {
         webSocketSet.remove(this);
+        String userKey = null;
+        for (Map.Entry<String, Session> entry : onlineUserSessions.entrySet()) {
+            if (entry.getValue().equals(this)) {
+                userKey = entry.getKey();
+                System.out.println("找到用过户：" + entry.getKey());
+            }
+        }
+        if (userKey != null) {
+            onlineUserSessions.remove(userKey);
+        }
         LOGGER.info("连接中断。。。 ");
     }
 
@@ -106,7 +116,7 @@ public class WebSocketServer {
                 Session session = (Session) entry.getValue();
                 synchronized (session) {
                     System.out.println("正在发送和用户【" + key + "】保持连接的消息");
-                    sendMsgFromServer(session, messageContent);
+                    sendMsgFromServer(key, session, messageContent);
                 }
             } catch (ClassCastException e) {
                 System.out.println("获取到的数据不是session类型，保持连接失败！");
@@ -118,11 +128,12 @@ public class WebSocketServer {
     /**
      * 服务器发送消息给客户端
      */
-    public void sendMsgFromServer(Session session, String msgContent) throws IOException {
+    public void sendMsgFromServer(String key, Session session, String msgContent) throws IOException {
         if (session.isOpen()) {
             System.out.println("来自系统的消息！===>" + msgContent);
             session.getBasicRemote().sendText(JSON.toJSONString(new ResponseResult("0", "1", null, null)));
         } else {
+            onlineUserSessions.remove(key);
             System.out.println("客户端连接中断，心跳信息发送失败！");
         }
     }

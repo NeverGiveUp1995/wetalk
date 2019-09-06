@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ty.wetalk.mapper.FriendMapper">
+    <select id="getGroupsByUserAccount" resultType="com.ty.wetalk.model.Group">
+        select * FROM `groups` WHERE creatorId = #{userAccount}
+    </select>
+    <select id="getFriendsByGroupId" resultType="com.ty.wetalk.model.User">
+        SELECT
+            *
+        FROM
+            `user`
+        WHERE
+            account IN
+            (SELECT friends_of_group.friendId FROM friends_of_group WHERE groupId = #{gropId})
+    </select>
+
+</mapper>
