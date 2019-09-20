@@ -13,5 +13,38 @@
             account IN
             (SELECT friends_of_group.friendId FROM friends_of_group WHERE groupId = #{gropId})
     </select>
-
+    <!--按照用户名称或者id查询用户-->
+    <select id="searchFriend" resultType="com.ty.wetalk.model.SearchUser.SearchUsersSetRow">
+        <if test="currentUserAccount!=null">
+            SELECT * from
+            (SELECT * FROM `user` WHERE `user`.account like CONCAT('%',#{kw},'%') OR `user`.nickName like
+            CONCAT('%',#{kw},'%') OR `user`.address like CONCAT('%',#{kw},'%')) a
+            LEFT OUTER JOIN
+            (
+            SELECT * FROM friend
+            WHERE friend.activeUserId = #{currentUserAccount} and
+            friend.passiveUserId
+            in (SELECT `user`.account FROM `user` WHERE `user`.account like CONCAT('%',#{kw},'%') OR `user`.nickName
+            like CONCAT('%',#{kw},'%') OR `user`.address like CONCAT('%',#{kw},'%'))
+            OR
+            friend.passiveUserId = #{currentUserAccount} and
+            friend.activeUserId
+            in (SELECT `user`.account FROM `user` WHERE `user`.account like CONCAT('%',#{kw},'%') OR `user`.nickName
+            like CONCAT('%',#{kw},'%') OR `user`.address like CONCAT('%',#{kw},'%'))
+            ) b
+            ON (a.account = b.activeUserId or a.account = b.passiveUserId)
+        </if>
+        <if test="currentUserAccount==null">
+            SELECT * FROM `user` WHERE `user`.account like CONCAT('%',#{kw},'%') OR `user`.nickName like
+            CONCAT('%',#{kw},'%')
+        </if>
+    </select>
+    <!--添加好友-->
+    <insert id="addFriend">
+        INSERT INTO  friend (activeUserId,passiveUserId,addTime) VALUES(#{activeUserId},#{passiveUserId},#{addTime})
+    </insert>
+    <!--检查是否好友关系-->
+    <select id="checkFriend" resultType="com.ty.wetalk.model.Friend">
+        SELECT * FROM friend WHERE (activeUserId = #{activeUserAccount} and passiveUserId = #{passiveUserAccount}) OR (activeUserId = #{passiveUserAccount} and passiveUserId = #{activeUserAccount})
+    </select>
 </mapper>

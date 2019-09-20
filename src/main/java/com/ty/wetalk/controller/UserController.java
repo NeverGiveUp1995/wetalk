@@ -32,7 +32,6 @@ public class UserController {
 
     @RequestMapping(value = "/getUserByPhoneNum")
     public ResponseResult getUserByPhoneNum(@RequestParam String phoneNum) {
-        System.out.println("获取用户中。。" + phoneNum + "--------" + userService.getUserByPhoneNum(phoneNum));
         ResponseResult responseResult = new ResponseResult();
         responseResult.setData(userService.getUserByPhoneNum(phoneNum));
         return responseResult;
