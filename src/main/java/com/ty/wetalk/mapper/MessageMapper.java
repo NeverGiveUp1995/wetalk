@@ -8,7 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface MessageMapper {
-    void addMessage(int conversationId, String senderId, String receiverId, String sendTime, String content);
+    void addMessage(int conversationId, String senderId, String receiverId, String sendTime, String content,int msgType);
 
     List<MessageResult> getChatHistory(String currentUserAccount, String friendAccount);
 }

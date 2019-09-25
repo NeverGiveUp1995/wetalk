@@ -10,16 +10,18 @@ public class Message {
     User receiver;//收信人
     String sendTime;//发送时间
     String content;//发送内容
+    int msgType;//消息类型
 
     public Message() {
     }
 
-    public Message(int messageId, int conversationId, User sender, User receiver, String sendTime, String content) {
+    public Message(int messageId, int conversationId, User sender, User receiver, String sendTime, String content,int msgType) {
         this.messageId = messageId;
         this.conversationId = conversationId;
         this.sender = sender;
         this.receiver = receiver;
         this.sendTime = sendTime;
         this.content = content;
+        this.msgType = msgType;
     }
 }

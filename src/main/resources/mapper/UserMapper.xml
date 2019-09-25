@@ -63,7 +63,15 @@
                 ) as result
                 WHERE result.senderId =#{userAccount} or receiverId = #{userAccount}
     </select>
-
+    <!--    获取两个好友的对话id数量，用于判空，如果为0，则代表没有这条数据-->
+    <select id="getConversationCountOfUsers" resultType="java.lang.Integer">
+       SELECT count(conversationId) FROM
+                conversations
+                WHERE
+                    (conversation1 = #{senderId} and conversation2 = #{receiverId})
+                    or
+                    (conversation2 = #{senderId} and conversation1 = #{receiverId})
+    </select>
     <select id="getConversationId" resultType="java.lang.Integer">
             SELECT conversationId FROM
                 conversations
@@ -72,6 +80,10 @@
                     or
                     (conversation2 = #{senderId} and conversation1 = #{receiverId})
     </select>
+
+    <insert id="creatConversation">
+        insert into  conversations (conversation1,conversation2) value (#{senderId},#{receiverId});
+    </insert>
 
     <update id="register" parameterType="com.ty.wetalk.model.User">
         INSERT INTO user

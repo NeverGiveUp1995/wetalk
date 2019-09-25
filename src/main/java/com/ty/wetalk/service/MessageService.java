@@ -16,7 +16,7 @@ public class MessageService {
     MessageMapper messageMapper;
 
     public void addMessage(MessageRecord messageRecord) {
-        messageMapper.addMessage(messageRecord.getConversationId(), messageRecord.getSenderId(), messageRecord.getReceiverId(), messageRecord.getSendTime(), messageRecord.getContent());
+        messageMapper.addMessage(messageRecord.getConversationId(), messageRecord.getSenderId(), messageRecord.getReceiverId(), messageRecord.getSendTime(), messageRecord.getContent(), messageRecord.getMsgType());
     }
 
     public List<MessageResult> getChatHistory(String currentUserAccount, String friendAccount) {

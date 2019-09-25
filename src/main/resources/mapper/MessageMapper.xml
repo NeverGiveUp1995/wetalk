@@ -9,7 +9,8 @@
                 messages.senderId,
                 messages.receiverId,
                 messages.content,
-                messages.sendTime
+                messages.sendTime,
+                messages.msgType
             )
             VALUES
             (
@@ -17,7 +18,8 @@
                 #{senderId},
                 #{receiverId},
                 #{content},
-                #{sendTime}
+                #{sendTime},
+                #{msgType}
             );
     </update>
 

@@ -17,7 +17,11 @@ public interface UserMapper {
 
     List<MessageResult> getMessages(String userAccount);
 
+    int getConversationCountOfUsers(String senderId, String receiverId);
+
     int getConversationId(String senderId, String receiverId);
+
+    int creatConversation(String senderId, String receiverId);
 
     /**
      * 用户注册

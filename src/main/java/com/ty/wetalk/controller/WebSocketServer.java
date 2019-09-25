@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -14,12 +15,9 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonParser;
-import com.ty.wetalk.model.Message;
-import com.ty.wetalk.model.MessageRecord;
-import com.ty.wetalk.model.MessageResult;
+import com.ty.wetalk.model.*;
 import com.ty.wetalk.model.User;
-import com.ty.wetalk.service.MessageService;
-import com.ty.wetalk.service.UserService;
+import com.ty.wetalk.service.*;
 import com.ty.wetalk.utils.ResponseResult;
 import com.ty.wetalk.utils.Utils;
 import org.slf4j.Logger;
@@ -39,6 +37,9 @@ public class WebSocketServer {
     //定义用户服务接口，用于根据用户id获取用户信息，将用户信息封装成对象返回
     @Autowired
     private UserService userService;
+    @Autowired
+    private GroupService groupService;
+
     //定义静态变量onlineCount，用于记录当前在线的连接数。
     private static int onlineCount = 0;
     //concurrent 包的线程安全Set，用于存放每个用户客户端对应的MyWebSocket对象
@@ -46,13 +47,14 @@ public class WebSocketServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketServer.class);
 
-    public static WebSocketServer webSocketServer;
+    private static WebSocketServer webSocketServer;
 
     @PostConstruct
     public void init() {
         webSocketServer = this;
         webSocketServer.userService = this.userService;
         webSocketServer.messageService = this.messageService;
+        webSocketServer.groupService = this.groupService;
     }
 
     @OnOpen
@@ -94,11 +96,26 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(@PathParam("userAccount") String userAccount, Session session, String message) {
-        String receiverAccount = message.split("\\-")[0];
+        //消息类型：1：私人消息，2.群组消息
+        int msgType = Integer.parseInt(message.split("\\-")[0]);
+        String receiverAccount = message.split("\\-")[1];
         System.out.println("userAccount" + userAccount + "================receiverAccount" + receiverAccount);
-
-        String msgContent = message.split("\\-")[1];
-        sendMessage(userAccount, receiverAccount, msgContent);
+        String msgContent = message.split("\\-")[2];
+        switch (msgType) {
+            case 0://系统消息
+                sendMessage(userAccount, receiverAccount, msgContent, 0);
+                break;
+            case 1://私人信息
+                sendMessage(userAccount, receiverAccount, msgContent, 1);
+                break;
+            case 2://群组消息
+                List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
+                //将消息发送给该群中的所有用户
+                for (User user : users) {
+                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
+                }
+                break;
+        }
     }
 
     @OnError
@@ -141,11 +158,11 @@ public class WebSocketServer {
     /**
      * 向指定Session(用户)发送message
      *
-     * @param senderAccount         :发送者id
+     * @param senderAccount:发送者id
      * @param receiverAccount：接收者id
      * @param messageContent：消息内容
      */
-    private void sendMessage(String senderAccount, String receiverAccount, String messageContent) {
+    private void sendMessage(String senderAccount, String receiverAccount, String messageContent, int msgType) {
         Session session = onlineUserSessions.get(receiverAccount);
         RemoteEndpoint.Basic basicRemote = null;
 //        获取发送者信息
@@ -163,6 +180,7 @@ public class WebSocketServer {
         msg.setReceiverId(receiverAccount);
         msg.setContent(messageContent);
         msg.setSendTime(simpleDateFormat.format(currentDate));
+        msg.setMsgType(msgType);
         webSocketServer.messageService.addMessage(msg);
         /*
          * 1.发送消息对象,如果对方在线，直接将消息发送到对方，然后将消息存放在数据库中
@@ -176,6 +194,7 @@ public class WebSocketServer {
             message.setSendTime(Utils.dateToString(new java.util.Date()));
             message.setContent(messageContent);
             message.setConversationId(conversationId);
+            message.setMsgType(msgType);
             try {
                 System.out.println("准备发送消息给用户【+" + receiverAccount + "+】,消息内容为：【" + messageContent + "】");
                 //发送消息
@@ -193,7 +212,7 @@ public class WebSocketServer {
 //                e.printStackTrace();
             }
         } else {
-            System.out.println("目标用户不在线，即将将数据存入数据库表格");
+            System.out.println("目标用户不在线，即将将数据存入数据库");
         }
     }
 

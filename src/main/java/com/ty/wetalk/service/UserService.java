@@ -30,6 +30,10 @@ public class UserService {
     }
 
     public int getConversationId(String senderId, String receiverId) {
+        //如果当前两个用户还没有添加好友，则先创建一个会话记录，生成一个conversationId
+        if (userMapper.getConversationCountOfUsers(senderId, receiverId) == 0) {
+            userMapper.creatConversation(senderId, receiverId);
+        }
         return userMapper.getConversationId(senderId, receiverId);
     }
 

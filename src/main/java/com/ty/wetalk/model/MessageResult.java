@@ -17,6 +17,7 @@ public class MessageResult {
     private String registerDate;//地址
     private int messageId;
     private int conversationId;
+    private int msgType;//消息类型【0.系统消息。1.私人消息，2.群组消息】
     private String senderId;
     private String receiverId;
     private String sendTime;

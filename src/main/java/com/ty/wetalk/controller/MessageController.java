@@ -48,7 +48,8 @@ public class MessageController {
                     sender,
                     receiver,
                     messageResult.getSendTime(),
-                    messageResult.getContent()
+                    messageResult.getContent(),
+                    messageResult.getMsgType()
             ));
         });
         responseResult.setMsgType("1");

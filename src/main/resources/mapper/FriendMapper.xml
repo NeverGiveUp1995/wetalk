@@ -11,7 +11,7 @@
             `user`
         WHERE
             account IN
-            (SELECT friends_of_group.friendId FROM friends_of_group WHERE groupId = #{gropId})
+            (SELECT friends_of_groups.friendId FROM friends_of_groups WHERE groupId = #{gropId})
     </select>
     <!--按照用户名称或者id查询用户-->
     <select id="searchFriend" resultType="com.ty.wetalk.model.SearchUser.SearchUsersSetRow">
