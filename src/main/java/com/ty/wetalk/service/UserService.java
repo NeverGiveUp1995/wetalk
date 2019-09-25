@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 public class UserService {
+
     @Autowired
     UserMapper userMapper;
 
@@ -22,7 +23,12 @@ public class UserService {
     }
 
     public User login(String userAccount, String password) {
-        return userMapper.login(userAccount, password);
+        System.out.println("正在登录。。。。");
+
+        User user = userMapper.login(userAccount, password);
+        System.out.println("映射上了");
+
+        return user;
     }
 
     public List<MessageResult> getMessages(String userAccount) {
@@ -32,7 +38,9 @@ public class UserService {
     public int getConversationId(String senderId, String receiverId) {
         //如果当前两个用户还没有添加好友，则先创建一个会话记录，生成一个conversationId
         if (userMapper.getConversationCountOfUsers(senderId, receiverId) == 0) {
-            userMapper.creatConversation(senderId, receiverId);
+            if (userMapper.creatConversation(senderId, receiverId) == -1) {
+                return -1;
+            }
         }
         return userMapper.getConversationId(senderId, receiverId);
     }

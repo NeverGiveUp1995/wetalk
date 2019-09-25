@@ -3,7 +3,6 @@ package com.ty.wetalk.mapper;
 import com.ty.wetalk.model.MessageResult;
 import com.ty.wetalk.model.User;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 

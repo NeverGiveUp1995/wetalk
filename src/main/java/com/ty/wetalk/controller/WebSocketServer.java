@@ -14,9 +14,7 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.core.JsonParser;
 import com.ty.wetalk.model.*;
-import com.ty.wetalk.model.User;
 import com.ty.wetalk.service.*;
 import com.ty.wetalk.utils.ResponseResult;
 import com.ty.wetalk.utils.Utils;
@@ -37,8 +35,8 @@ public class WebSocketServer {
     //定义用户服务接口，用于根据用户id获取用户信息，将用户信息封装成对象返回
     @Autowired
     private UserService userService;
-    @Autowired
-    private GroupService groupService;
+//    @Autowired
+//    private GroupService groupService;
 
     //定义静态变量onlineCount，用于记录当前在线的连接数。
     private static int onlineCount = 0;
@@ -54,7 +52,7 @@ public class WebSocketServer {
         webSocketServer = this;
         webSocketServer.userService = this.userService;
         webSocketServer.messageService = this.messageService;
-        webSocketServer.groupService = this.groupService;
+//        webSocketServer.groupService = this.groupService;
     }
 
     @OnOpen
@@ -109,12 +107,12 @@ public class WebSocketServer {
                 sendMessage(userAccount, receiverAccount, msgContent, 1);
                 break;
             case 2://群组消息
-                List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
-                //将消息发送给该群中的所有用户
-                for (User user : users) {
-                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
-                }
-                break;
+//                List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
+//                //将消息发送给该群中的所有用户
+//                for (User user : users) {
+//                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
+//                }
+//                break;
         }
     }
 
@@ -171,48 +169,50 @@ public class WebSocketServer {
         User receiver = webSocketServer.userService.getUserByAccount(receiverAccount);
 //获取正在聊天的房间号
         int conversationId = webSocketServer.userService.getConversationId(senderAccount, receiverAccount);
-//        将发送的消息存入数据库
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date currentDate = new java.sql.Date(new java.util.Date().getTime());
-        MessageRecord msg = new MessageRecord();
-        msg.setConversationId(conversationId);
-        msg.setSenderId(senderAccount);
-        msg.setReceiverId(receiverAccount);
-        msg.setContent(messageContent);
-        msg.setSendTime(simpleDateFormat.format(currentDate));
-        msg.setMsgType(msgType);
-        webSocketServer.messageService.addMessage(msg);
-        /*
-         * 1.发送消息对象,如果对方在线，直接将消息发送到对方，然后将消息存放在数据库中
-         * 2.如果对方不在线，不用发送消息，直接将消息存放在数据库中，并且做上未收消息
-         */
-        if (session != null && session.isOpen()) {
-            basicRemote = session.getBasicRemote();
-            Message message = new Message();
-            message.setSender(sender);
-            message.setReceiver(receiver);
-            message.setSendTime(Utils.dateToString(new java.util.Date()));
-            message.setContent(messageContent);
-            message.setConversationId(conversationId);
-            message.setMsgType(msgType);
-            try {
-                System.out.println("准备发送消息给用户【+" + receiverAccount + "+】,消息内容为：【" + messageContent + "】");
-                //发送消息
-                ResponseResult responseResult = new ResponseResult();
-                responseResult.msgType = "1";
-                responseResult.status = "1";
-                responseResult.data = message;
-                responseResult.tip = null;
-                synchronized (session) {
-                    System.out.println("返回的json数据===》" + JSON.toJSONString(responseResult));
-                    basicRemote.sendText(JSON.toJSONString(responseResult));
-                }
-            } catch (Exception e) {
-                System.out.println("发送失败！");
+        if (conversationId != -1) {
+            //        将发送的消息存入数据库
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date currentDate = new java.sql.Date(new java.util.Date().getTime());
+            MessageRecord msg = new MessageRecord();
+            msg.setConversationId(conversationId);
+            msg.setSenderId(senderAccount);
+            msg.setReceiverId(receiverAccount);
+            msg.setContent(messageContent);
+            msg.setSendTime(simpleDateFormat.format(currentDate));
+            msg.setMsgType(msgType);
+            webSocketServer.messageService.addMessage(msg);
+            /*
+             * 1.发送消息对象,如果对方在线，直接将消息发送到对方，然后将消息存放在数据库中
+             * 2.如果对方不在线，不用发送消息，直接将消息存放在数据库中，并且做上未收消息
+             */
+            if (session != null && session.isOpen()) {
+                basicRemote = session.getBasicRemote();
+                Message message = new Message();
+                message.setSender(sender);
+                message.setReceiver(receiver);
+                message.setSendTime(Utils.dateToString(new java.util.Date()));
+                message.setContent(messageContent);
+                message.setConversationId(conversationId);
+                message.setMsgType(msgType);
+                try {
+                    System.out.println("准备发送消息给用户【+" + receiverAccount + "+】,消息内容为：【" + messageContent + "】");
+                    //发送消息
+                    ResponseResult responseResult = new ResponseResult();
+                    responseResult.msgType = "1";
+                    responseResult.status = "1";
+                    responseResult.data = message;
+                    responseResult.tip = null;
+                    synchronized (session) {
+                        System.out.println("返回的json数据===》" + JSON.toJSONString(responseResult));
+                        basicRemote.sendText(JSON.toJSONString(responseResult));
+                    }
+                } catch (Exception e) {
+                    System.out.println("发送失败！");
 //                e.printStackTrace();
+                }
+            } else {
+                System.out.println("目标用户不在线，即将将数据存入数据库");
             }
-        } else {
-            System.out.println("目标用户不在线，即将将数据存入数据库");
         }
     }
 

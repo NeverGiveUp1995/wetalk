@@ -8,10 +8,12 @@ import com.ty.wetalk.model.Group;
 import com.ty.wetalk.model.SearchUser.SearchUser;
 import com.ty.wetalk.model.SearchUser.SearchUsersSetRow;
 import com.ty.wetalk.model.User;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+@Mapper
 public interface FriendMapper {
     public List<Group> getGroupsByUserAccount(String userAccount);
 
