@@ -35,8 +35,8 @@ public class WebSocketServer {
     //定义用户服务接口，用于根据用户id获取用户信息，将用户信息封装成对象返回
     @Autowired
     private UserService userService;
-//    @Autowired
-//    private GroupService groupService;
+    @Autowired
+    private GroupService groupService;
 
     //定义静态变量onlineCount，用于记录当前在线的连接数。
     private static int onlineCount = 0;
@@ -52,7 +52,7 @@ public class WebSocketServer {
         webSocketServer = this;
         webSocketServer.userService = this.userService;
         webSocketServer.messageService = this.messageService;
-//        webSocketServer.groupService = this.groupService;
+        webSocketServer.groupService = this.groupService;
     }
 
     @OnOpen
@@ -107,12 +107,12 @@ public class WebSocketServer {
                 sendMessage(userAccount, receiverAccount, msgContent, 1);
                 break;
             case 2://群组消息
-//                List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
-//                //将消息发送给该群中的所有用户
-//                for (User user : users) {
-//                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
-//                }
-//                break;
+                List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
+                //将消息发送给该群中的所有用户
+                for (User user : users) {
+                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
+                }
+                break;
         }
     }
 
