@@ -94,23 +94,23 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(@PathParam("userAccount") String userAccount, Session session, String message) {
-        //消息类型：1：私人消息，2.群组消息
-        int msgType = Integer.parseInt(message.split("\\-")[0]);
+        //消息类型：1:系统消息；2：私人消息，3.群组消息
+        String msgType = message.split("\\-")[0];
         String receiverAccount = message.split("\\-")[1];
         System.out.println("userAccount" + userAccount + "================receiverAccount" + receiverAccount);
         String msgContent = message.split("\\-")[2];
         switch (msgType) {
-            case 0://系统消息
-                sendMessage(userAccount, receiverAccount, msgContent, 0);
+            case "1"://系统消息
+                sendMessage(userAccount, receiverAccount, msgContent, "1");
                 break;
-            case 1://私人信息
-                sendMessage(userAccount, receiverAccount, msgContent, 1);
+            case "2"://私人信息
+                sendMessage(userAccount, receiverAccount, msgContent, "2");
                 break;
-            case 2://群组消息
+            case "3"://群组消息
                 List<User> users = groupService.getUsersByGroupAccount(receiverAccount);
                 //将消息发送给该群中的所有用户
                 for (User user : users) {
-                    sendMessage(userAccount, user.getAccount(), msgContent, 2);
+                    sendMessage(userAccount, user.getAccount(), msgContent, "3");
                 }
                 break;
         }
@@ -160,7 +160,7 @@ public class WebSocketServer {
      * @param receiverAccount：接收者id
      * @param messageContent：消息内容
      */
-    private void sendMessage(String senderAccount, String receiverAccount, String messageContent, int msgType) {
+    private void sendMessage(String senderAccount, String receiverAccount, String messageContent, String msgType) {
         Session session = onlineUserSessions.get(receiverAccount);
         RemoteEndpoint.Basic basicRemote = null;
 //        获取发送者信息

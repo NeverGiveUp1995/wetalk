@@ -82,11 +82,38 @@ public class UserController {
         return responseResult;
     }
 
+    /**
+     * 获取消息列表
+     *
+     * @param userAccount：必传，用户账号
+     * @param msgType：消息类型（不传默认获取所有类型）
+     * @param count：数量(必传：-1代表全部):两种情况： 1.传入了msgType：
+     *                                  ---------传入count：获取条数
+     *                                  ---------count=-1：获取该类型的所有记录
+     *                                  2.未传入msgType：
+     *                                  ---------count不生效，
+     * @return
+     */
     @RequestMapping("/getMessages")
-    public ResponseResult getMessages(@RequestParam String userAccount) {
-        System.out.println("传入的参数===>:" + userAccount);
+    public ResponseResult getMessages(@RequestParam String userAccount, String msgType, @RequestParam int count) {
+//        System.out.println("传入的参数===>:" + userAccount + "=====" + msgType + "=====" + count);
         ResponseResult responseResult = new ResponseResult();
-        List<MessageResult> messageResults = userService.getMessages(userAccount);
+        List<MessageResult> messageResults = new ArrayList<MessageResult>();
+        if (msgType == null) {
+            //获取系统消息
+            List<MessageResult> systemMessageResults = userService.getMessages(userAccount, "1", 1);
+            //获取私人聊天记录
+            List<MessageResult> personMessageResults = userService.getMessages(userAccount, "2", -1);
+
+            if (personMessageResults != null) {
+                messageResults.addAll(personMessageResults);
+            }
+            if (systemMessageResults != null) {
+                messageResults.addAll(systemMessageResults);
+            }
+        } else {
+            messageResults = userService.getMessages(userAccount, msgType, -1);
+        }
         List<Message> messages = new ArrayList<Message>();
         for (MessageResult result : messageResults) {
             Message message = new Message();
@@ -123,6 +150,7 @@ public class UserController {
             message.setSender(sender);
             message.setReceiver(receiver);
             messages.add(0, message);
+            message.setMsgType(result.getMsgType());
         }
 
         System.out.println(messages);

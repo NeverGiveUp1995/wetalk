@@ -3,6 +3,7 @@ package com.ty.wetalk.mapper;
 import com.ty.wetalk.model.MessageResult;
 import com.ty.wetalk.model.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface UserMapper {
 
     User login(String userAccount, String password);
 
-    List<MessageResult> getMessages(String userAccount);
+    List<MessageResult> getMessages(@RequestParam String userAccount, String msgType, int count);
 
     int getConversationCountOfUsers(String senderId, String receiverId);
 

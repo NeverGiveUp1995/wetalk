@@ -5,6 +5,7 @@ import com.ty.wetalk.model.MessageResult;
 import com.ty.wetalk.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -23,16 +24,11 @@ public class UserService {
     }
 
     public User login(String userAccount, String password) {
-        System.out.println("正在登录。。。。");
-
-        User user = userMapper.login(userAccount, password);
-        System.out.println("映射上了");
-
-        return user;
+        return userMapper.login(userAccount, password);
     }
 
-    public List<MessageResult> getMessages(String userAccount) {
-        return userMapper.getMessages(userAccount);
+    public List<MessageResult> getMessages(@RequestParam String userAccount, String msgType, int count) {
+        return userMapper.getMessages(userAccount, msgType, count);
     }
 
     public int getConversationId(String senderId, String receiverId) {

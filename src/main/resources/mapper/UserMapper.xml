@@ -15,53 +15,56 @@
     </select>
 
     <select id="getMessages" resultType="com.ty.wetalk.model.MessageResult">
---                  SELECT e.*  FROM(SELECT c.* FROM
---                    (
---                       SELECT a.conversation_id, MAX( a.message_id) as message_id
---                       FROM message a
---                       GROUP BY a.conversation_id
---                    ) as b
---                 LEFT JOIN message c ON c.message_id = b.message_id) e
---                 ORDER BY e.send_time DESC
-                SELECT result.* FROM
-                (
-                    SELECT * FROM
-                        (
-                            SELECT * FROM `user`
-                            INNER  JOIN
-                                (
-                                    SELECT e.*  FROM
-                                        (
-                                            SELECT c.* FROM
-                                                (
-                                                    SELECT a.conversationId, MAX( a.messageId) as messageId
-                                                    FROM messages a
-                                                    GROUP BY a.conversationId
-                                                ) as b
-                                            LEFT JOIN messages c ON c.messageId = b.messageId
-                                        ) e
-                                    ORDER BY e.sendTime DESC
-                                )as result
-                            ON result.senderId = `user`.account
-                        ) as a
-                        INNER  JOIN
-                        (
-                            SELECT
-                                `account` as account1,
-                                `password` as password1,
-                                `nickName` as nickName1,
-                                headerImg as headerImg1,
-                                phoneNum as phoneNum1,
-                                email as email1,
-                                gender as gender1,
-                                birthday as birthday1,
-                                address as address1,
-                                isVip as isVip1
-                             FROM `user`
-                        ) as user1
-                        ON a.receiverId = user1.account1
-                ) as result
-                WHERE result.senderId =#{userAccount} or receiverId = #{userAccount}
+        -- SELECT e.* FROM(SELECT c.* FROM
+        -- (
+        -- SELECT a.conversation_id, MAX( a.message_id) as message_id
+        -- FROM message a
+        -- GROUP BY a.conversation_id
+        -- ) as b
+        -- LEFT JOIN message c ON c.message_id = b.message_id) e
+        -- ORDER BY e.send_time DESC
+        SELECT result.* FROM
+        (
+        SELECT * FROM
+        (
+        SELECT * FROM `user`
+        INNER JOIN
+        (
+        SELECT e.* FROM
+        (
+        SELECT c.* FROM
+        (
+        SELECT a.conversationId, MAX( a.messageId) as messageId
+        FROM messages a
+        GROUP BY a.conversationId
+        ) as b
+        LEFT JOIN messages c ON c.messageId = b.messageId
+        ) e
+        ORDER BY e.sendTime DESC
+        )as result
+        ON result.senderId = `user`.account
+        ) as a
+        INNER JOIN
+        (
+        SELECT
+        `account` as account1,
+        `password` as password1,
+        `nickName` as nickName1,
+        headerImg as headerImg1,
+        phoneNum as phoneNum1,
+        email as email1,
+        gender as gender1,
+        birthday as birthday1,
+        address as address1,
+        isVip as isVip1
+        FROM `user`
+        ) as user1
+        ON a.receiverId = user1.account1
+        ) as result
+        WHERE (result.senderId =#{userAccount} or receiverId = #{userAccount}) and msgType = #{msgType}
+        <if test="count != -1">
+            LIMIT #{count}
+        </if>
     </select>
     <!--    获取两个好友的对话id数量，用于判空，如果为0，则代表没有这条数据-->
     <select id="getConversationCountOfUsers" resultType="java.lang.Integer">
