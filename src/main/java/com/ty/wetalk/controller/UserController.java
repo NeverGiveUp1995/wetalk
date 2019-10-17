@@ -3,6 +3,7 @@ package com.ty.wetalk.controller;
 import com.ty.wetalk.model.Message;
 import com.ty.wetalk.model.MessageResult;
 import com.ty.wetalk.model.User;
+import com.ty.wetalk.service.GroupService;
 import com.ty.wetalk.service.UserService;
 import com.ty.wetalk.utils.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private GroupService groupService;
 
     @RequestMapping(value = "/getUserByUserAccount")
     public ResponseResult getUserByUserAccount(@RequestParam String userAccount) {
@@ -41,7 +44,7 @@ public class UserController {
     public ResponseResult register(@RequestParam String userAccount, @RequestParam String password, @RequestParam String nickName, @RequestParam String phoneNum, String email, @RequestParam String gender) {
         ResponseResult responseResult = new ResponseResult();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date currentDate = new java.sql.Date(new java.util.Date().getTime());
+        String creatTime = simpleDateFormat.format(new java.sql.Date(new java.util.Date().getTime()));
         User user = new User();
         user.setAccount(userAccount);
         user.setPassword(password);
@@ -49,10 +52,11 @@ public class UserController {
         user.setPhoneNum(phoneNum);
         user.setEmail(email);
         user.setGender(gender);
-        user.setRegisterDate(simpleDateFormat.format(currentDate));
+        user.setRegisterDate(creatTime);
         System.out.println("正在注册用户：" + user);
         try {
             responseResult.setData(userService.register(user));
+            groupService.creatGroup(userAccount, "我的好友", creatTime);
             responseResult.setTip("注册成功！");
         } catch (Exception e) {
             if (e instanceof DuplicateKeyException) {

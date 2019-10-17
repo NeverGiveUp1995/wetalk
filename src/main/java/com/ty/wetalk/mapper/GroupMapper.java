@@ -15,6 +15,9 @@ public interface GroupMapper {
 
     public List<User> getUsersByGroupAccount(@RequestParam String groupAccount);
 
+    public int creatGroup(String userAccount, String groupName, String creatTime);
+
+    public Integer getGroupIdByUserAccountAndGroupName(String userAccount, String groupName);
 }
 
 

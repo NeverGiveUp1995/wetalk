@@ -14,6 +14,7 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
+import com.ty.wetalk.Enums.SystemMsgType;
 import com.ty.wetalk.model.*;
 import com.ty.wetalk.service.*;
 import com.ty.wetalk.utils.ResponseResult;
@@ -94,11 +95,15 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(@PathParam("userAccount") String userAccount, Session session, String message) {
+        System.out.println("收到的消息：" + message);
         //消息类型：1:系统消息；2：私人消息，3.群组消息
-        String msgType = message.split("\\-")[0];
-        String receiverAccount = message.split("\\-")[1];
+        String jsonStr = message.split("\\-")[0];
+        JsonDataWithMessageContent jsonDataWithMessageContent = JSON.parseObject(jsonStr, JsonDataWithMessageContent.class);
+        String receiverAccount = jsonDataWithMessageContent.getReceiverAccount();
+        String msgType = jsonDataWithMessageContent.getMsgType();
         System.out.println("userAccount" + userAccount + "================receiverAccount" + receiverAccount);
-        String msgContent = message.split("\\-")[2];
+
+        String msgContent = message.substring(message.indexOf('-') + 1, message.length());
         switch (msgType) {
             case "1"://系统消息
                 sendMessage(userAccount, receiverAccount, msgContent, "1");
@@ -146,7 +151,12 @@ public class WebSocketServer {
     public void sendMsgFromServer(String key, Session session, String msgContent) throws IOException {
         if (session.isOpen()) {
             System.out.println("来自系统的消息！===>" + msgContent);
-            session.getBasicRemote().sendText(JSON.toJSONString(new ResponseResult("0", "1", null, null)));
+            Message message = new Message();
+            message.setMsgType("1");
+            message.setContent(SystemMsgType.HEARTBEAT.toString());
+            message.setSender(new User());
+            message.setReceiver(new User());
+            session.getBasicRemote().sendText(JSON.toJSONString(new ResponseResult("1", message, null)));
         } else {
             onlineUserSessions.remove(key);
             System.out.println("客户端连接中断，心跳信息发送失败！");
@@ -160,7 +170,8 @@ public class WebSocketServer {
      * @param receiverAccount：接收者id
      * @param messageContent：消息内容
      */
-    private void sendMessage(String senderAccount, String receiverAccount, String messageContent, String msgType) {
+    public void sendMessage(String senderAccount, String receiverAccount, String messageContent, String msgType) {
+        System.out.println(senderAccount + "正在发送消息给" + receiverAccount);
         Session session = onlineUserSessions.get(receiverAccount);
         RemoteEndpoint.Basic basicRemote = null;
 //        获取发送者信息
@@ -180,7 +191,10 @@ public class WebSocketServer {
             msg.setContent(messageContent);
             msg.setSendTime(simpleDateFormat.format(currentDate));
             msg.setMsgType(msgType);
-            webSocketServer.messageService.addMessage(msg);
+            //如果消息不是系统消息中的更新跟组列表指令、心跳消息，则将消息存入数据库
+            if (msgType.equals("1") && !messageContent.equals(SystemMsgType.UPDATEGROUPLIST.toString()) || !messageContent.equals(SystemMsgType.HEARTBEAT.toString())) {
+                webSocketServer.messageService.addMessage(msg);
+            }
             /*
              * 1.发送消息对象,如果对方在线，直接将消息发送到对方，然后将消息存放在数据库中
              * 2.如果对方不在线，不用发送消息，直接将消息存放在数据库中，并且做上未收消息
@@ -198,7 +212,6 @@ public class WebSocketServer {
                     System.out.println("准备发送消息给用户【+" + receiverAccount + "+】,消息内容为：【" + messageContent + "】");
                     //发送消息
                     ResponseResult responseResult = new ResponseResult();
-                    responseResult.msgType = "1";
                     responseResult.status = "1";
                     responseResult.data = message;
                     responseResult.tip = null;

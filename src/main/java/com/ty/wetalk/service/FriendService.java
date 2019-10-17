@@ -27,12 +27,31 @@ public class FriendService {
     }
 
     public List<SearchUsersSetRow> searchFriend(String currentUserAccount, @RequestParam String kw) {
-        return friendMapper.searchFriend(currentUserAccount,kw);
+        return friendMapper.searchFriend(currentUserAccount, kw);
     }
-
+    //发起添加好友请求
     public int addFriend(String activeUserId, String passiveUserId, String addTime) {
         return friendMapper.addFriend(activeUserId, passiveUserId, addTime);
     }
+    //同意添加好友
+    public int agreeAddFriend(String activeUserId, String passiveUserId, String addTime) {
+        return friendMapper.agreeAddFriend(activeUserId, passiveUserId, addTime);
+    }
+
+    //查询是否已经添加好友到分组(获取好友以前在自己所在的分组id)
+    public  Integer getOldGroupId(String creatorId,String friendId){
+        return  friendMapper.getOldGroupId(creatorId,friendId);
+    }
+
+    //添加好友到分组（新增加的好友）
+    public int addFriendToGroup(String userAccount, int groupId, String addTime) {
+        return friendMapper.addFriendToGroup(userAccount, groupId, addTime);
+    }
+    //移动好友到分组（已添加的好友）
+    public int removeFriendToGroup(int oldGroupId, int newGroupId,String targetUserAccount ,String addTime) {
+        return friendMapper.removeFriendToGroup(oldGroupId, newGroupId,targetUserAccount, addTime);
+    }
+
 
     public Friend checkFriend(String activeUserAccount, String passiveUserAccount) {
         return friendMapper.checkFriend(activeUserAccount, passiveUserAccount);

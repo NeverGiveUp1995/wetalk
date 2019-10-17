@@ -3,6 +3,7 @@
  */
 package com.ty.wetalk.controller;
 
+import com.ty.wetalk.Enums.SystemMsgType;
 import com.ty.wetalk.model.Friend;
 import com.ty.wetalk.model.Group;
 import com.ty.wetalk.model.SearchUser.SearchUser;
@@ -11,6 +12,7 @@ import com.ty.wetalk.model.User;
 import com.ty.wetalk.service.FriendService;
 import com.ty.wetalk.utils.ResponseResult;
 import com.ty.wetalk.utils.Utils;
+import org.apache.ibatis.executor.ExecutorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,6 +78,13 @@ public class FriendController {
         return responseResult;
     }
 
+    /**
+     * 发起添加好友请求
+     *
+     * @param activeUserId
+     * @param passiveUserId
+     * @return
+     */
     @RequestMapping("/addFriend")
     public ResponseResult addFriend(String activeUserId, String passiveUserId) {
         ResponseResult responseResult = new ResponseResult();
@@ -93,6 +102,66 @@ public class FriendController {
         return responseResult;
     }
 
+
+    /**
+     * 同意添加好友
+     *
+     * @param activeUserId:同意的用户id
+     * @param passiveUserId:添加的分组id
+     * @param newGroupIdOfActive      :发起请求者需要添加好友到的分组id
+     * @param newGroupIdOfPassiveUser :同意添加好友用户需要添加到分组的分组id
+     * @return
+     */
+    @RequestMapping("/agreeAddFriend")
+    public ResponseResult agreeAddFriend(@RequestParam String activeUserId, @RequestParam String passiveUserId, @RequestParam int newGroupIdOfPassiveUser, @RequestParam int newGroupIdOfActive) {
+        ResponseResult responseResult = new ResponseResult();
+        try {
+            String agreeTime = Utils.dateToString(new Date());
+            friendService.agreeAddFriend(activeUserId, passiveUserId, agreeTime);
+            //因为是同意添加好友，所以创建分组的用户是被添加者，好友是主动发起请求的用户
+            Integer oldGroupIdOfActiveUser = friendService.getOldGroupId(activeUserId, passiveUserId);
+            Integer oldGroupIdOfPassiveUser = friendService.getOldGroupId(passiveUserId, activeUserId);
+
+            //如果查询到旧分组id，说明在分组表中，已经添加过分组，则更新旧的分组id，并且更新移动时间，如果没有，则说明是新添加的好友，直接插入新的数据
+            if (oldGroupIdOfPassiveUser != null) {
+                //以防重复添加，增加冗余数据
+                friendService.removeFriendToGroup(oldGroupIdOfPassiveUser, newGroupIdOfPassiveUser, activeUserId, agreeTime);
+            } else {
+                friendService.addFriendToGroup(activeUserId, newGroupIdOfPassiveUser, agreeTime);
+            }
+            if (oldGroupIdOfActiveUser != null) {
+                //以防重复添加，增加冗余数据
+                friendService.removeFriendToGroup(oldGroupIdOfActiveUser, newGroupIdOfActive, passiveUserId, agreeTime);
+            } else {
+                friendService.addFriendToGroup(passiveUserId, newGroupIdOfActive, agreeTime);
+            }
+            WebSocketServer webSocketServer = new WebSocketServer();
+            webSocketServer.sendMessage(passiveUserId, activeUserId, "我们已经是好友啦，快来和我聊天吧！", "2");
+            webSocketServer.sendMessage(passiveUserId, activeUserId, SystemMsgType.UPDATEGROUPLIST.toString(), "1");
+            responseResult.setStatus("1");
+            responseResult.setTip("success");
+        } catch (Exception e) {
+            responseResult.setStatus("0");
+            responseResult.setTip("error");
+        }
+        return responseResult;
+    }
+
+    /**
+     * 移动好友到分组
+     *
+     * @param passiveUserId
+     * @param groupId
+     * @return
+     */
+    @RequestMapping("/removeFriendToGroup")
+    public ResponseResult removeFriendToGroup(@RequestParam String passiveUserId, @RequestParam int groupId) {
+        ResponseResult responseResult = new ResponseResult();
+        String agreeTime = Utils.dateToString(new Date());
+        friendService.addFriendToGroup(passiveUserId, groupId, agreeTime);
+        return responseResult;
+    }
+
     @RequestMapping("/checkFriend")
     public ResponseResult checkFriend(@RequestParam String activeUserAccount, @RequestParam String passiveUserAccount) {
         ResponseResult responseResult = new ResponseResult();
@@ -104,7 +173,6 @@ public class FriendController {
         } else {
             responseResult.setStatus("0");
             responseResult.setTip("该用户已在您好友列表中");
-            responseResult.setMsgType("2");
             responseResult.setData(null);
         }
         System.out.println("====================" + responseResult);

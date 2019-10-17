@@ -1,5 +1,6 @@
 package com.ty.wetalk.config;
 
+import com.ty.wetalk.Enums.SystemMsgType;
 import com.ty.wetalk.controller.WebSocketServer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,6 @@ public class WebSocketConfig {
     @Scheduled(fixedRate = 50000)
     private void configureTasks() throws Exception {
         System.out.println("================================定时器发送================================");
-        webSocketServer.sendMessageAll("");
+        webSocketServer.sendMessageAll(SystemMsgType.HEARTBEAT.toString());
     }
 }

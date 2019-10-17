@@ -88,6 +88,7 @@
         insert into  conversations (conversation1,conversation2) value (#{senderId},#{receiverId});
     </insert>
 
+
     <update id="register" parameterType="com.ty.wetalk.model.User">
         INSERT INTO user
             (

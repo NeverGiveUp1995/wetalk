@@ -4,4 +4,12 @@
     <select id="getUsersByGroupId" resultType="com.ty.wetalk.model.User">
         select  * from `friendGroup` where groupAccount = #{groupAccount}
     </select>
+
+    <update id="creatGroup">
+        INSERT INTO `groups` (creatorId,friendGroupName,creatTime) VALUES(#{userAccount},#{groupName},#{creatTime})
+    </update>
+
+    <select id="getGroupIdByUserAccountAndGroupName" resultType="java.lang.Integer">
+        SELECT groupId FROM `groups` WHERE creatorId = #{userAccount} AND friendGroupName=#{groupName}
+    </select>
 </mapper>

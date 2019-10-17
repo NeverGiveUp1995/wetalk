@@ -52,7 +52,6 @@ public class MessageController {
                     messageResult.getMsgType()
             ));
         });
-        responseResult.setMsgType("1");
         responseResult.setStatus("1");
         responseResult.setData(messageHistory);
         System.out.println(responseResult);

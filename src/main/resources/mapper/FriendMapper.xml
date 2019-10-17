@@ -39,10 +39,35 @@
             CONCAT('%',#{kw},'%')
         </if>
     </select>
-    <!--添加好友-->
+    <!--发起添加好有的请求-->
     <insert id="addFriend">
         INSERT INTO  friend (activeUserId,passiveUserId,addTime) VALUES(#{activeUserId},#{passiveUserId},#{addTime})
     </insert>
+
+    <!-- 同意添加好友，为好友表添加同意日期的字段-->
+    <update id="agreeAddFriend">
+        UPDATE friend set agreeTime = #{agreeTime} WHERE activeUserId = #{activeUserId} and passiveUserId =#{passiveUserId};
+    </update>
+    <!--  获取好友之前所在分组id-->
+    <select id="getOldGroupId" resultType="java.lang.Integer">
+        	SELECT a.groupId FROM
+                (
+                    friends_of_groups a
+                    LEFT JOIN
+                    `groups` b
+                    ON a.groupId = b.groupId
+                ) WHERE friendId = #{friendId} AND creatorId = #{creatorId}
+    </select>
+    <!--移动好友到好友分组（情况一：新加的好友，直接插入数据）-->
+    <update id="addFriendToGroup">
+        INSERT INTO friends_of_groups (friendid,groupId,addTime) VALUES(#{userAccount},#{groupId},#{addTime})
+    </update>
+
+    <!--移动好友到好友分组（情况二：已经添加的好友，更新好友分组的字段数据）-->
+    <update id="removeFriendToGroup">
+        UPDATE friends_of_groups SET groupId=#{newGroupId}, addTime = #{addTime} WHERE groupId = #{oldGroupId} and friendId=#{targetUserAccount}
+    </update>
+
     <!--检查是否好友关系-->
     <select id="checkFriend" resultType="com.ty.wetalk.model.Friend">
         SELECT * FROM friend WHERE (activeUserId = #{activeUserAccount} and passiveUserId = #{passiveUserAccount}) OR (activeUserId = #{passiveUserAccount} and passiveUserId = #{activeUserAccount})
