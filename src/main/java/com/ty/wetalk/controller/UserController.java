@@ -18,7 +18,7 @@ import java.util.List;
 
 @CrossOrigin//允许跨域的请求
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
     @Autowired
     private UserService userService;

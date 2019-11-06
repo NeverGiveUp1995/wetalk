@@ -19,7 +19,7 @@ import java.util.List;
 
 @CrossOrigin//允许跨域的请求
 @RestController
-@RequestMapping("/message")
+@RequestMapping("/api/message")
 public class MessageController {
     @Autowired
     MessageService messageService;

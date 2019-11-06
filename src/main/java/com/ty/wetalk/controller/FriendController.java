@@ -28,7 +28,7 @@ import static com.ty.wetalk.sessions.UserSession.onlineUserSessions;
 
 @CrossOrigin//允许跨域的请求
 @RestController
-@RequestMapping("/friend")
+@RequestMapping("/api/friend")
 public class FriendController {
     @Autowired
     private FriendService friendService;
